@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Mint an NFT</title>
+  <script src="https://cdn.jsdelivr.net/npm/web3@1.10.0/dist/web3.min.js"></script>
+</head>
+<body style="font-family: sans-serif; text-align: center; margin-top: 50px;">
+  <h1>Mint Your NFT</h1>
+  <button id="connect">Connect Wallet</button>
+  <p id="wallet" style="margin-top: 10px;"></p>
+  <button id="mint" disabled>Mint NFT (0.0055 ETH)</button>
+  <p id="status" style="margin-top: 20px; color: green;"></p>
+
+  <script>
+    const wrapperAddress = "0xD7ACd2a9FD159E69Bb102A1ca21C9a3e3A5F771B"; // Replace this
+    const abi = [
+      {
+        "inputs": [],
+        "name": "mintThroughWrapper",
+        "outputs": [],
+        "stateMutability": "payable",
+        "type": "function"
+      }
+    ];
+
+    let web3;
+    let accounts;
+    let contract;
+
+    const connectButton = document.getElementById('connect');
+    const mintButton = document.getElementById('mint');
+    const statusText = document.getElementById('status');
+    const walletText = document.getElementById('wallet');
+
+    connectButton.onclick = async () => {
+      if (window.ethereum) {
+        web3 = new Web3(window.ethereum);
+        try {
+          accounts = await ethereum.request({ method: 'eth_requestAccounts' });
+          walletText.innerText = `Connected: ${accounts[0].slice(0, 6)}...${accounts[0].slice(-4)}`;
+          contract = new web3.eth.Contract(abi, wrapperAddress);
+          mintButton.disabled = false;
+        } catch (error) {
+          walletText.innerText = 'Connection failed';
+        }
+      } else {
+        walletText.innerText = 'MetaMask not found';
+      }
+    };
+
+    mintButton.onclick = async () => {
+      statusText.innerText = 'Processing...';
+      try {
+        await contract.methods.mintThroughWrapper().send({
+          from: accounts[0],
+          value: web3.utils.toWei("0.0055", "ether")
+        });
+        statusText.innerText = 'NFT Minted Successfully!';
+      } catch (err) {
+        statusText.innerText = 'Transaction failed or cancelled';
+      }
+    };
+  </script>
+</body>
+</html>
